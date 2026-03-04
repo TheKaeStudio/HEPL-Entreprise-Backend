@@ -2,6 +2,13 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+/**
+ * @desc Inscription d'un nouvel utilisateur
+ * @param {string} req.body.name - Nom de l'utilisateur
+ * @param {string} req.body.email - Email de l'utilisateur
+ * @param {string} req.body.password - Mot de passe
+ * @returns {Object} message de succès ou erreur
+ */
 exports.signup = async (req, res) => {
     try {
         const { name, email, password } = req.body;
@@ -26,6 +33,12 @@ exports.signup = async (req, res) => {
     }
 };
 
+/**
+ * @desc Connexion d'un utilisateur existant
+ * @param {string} req.body.email - Email
+ * @param {string} req.body.password - Mot de passe
+ * @returns {Object} token JWT et rôle de l'utilisateur
+ */
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;

@@ -8,7 +8,13 @@ const requireAdmin = require("../middlewares/requireAdmin.middleware");
 const requireLimitedAccess = require("../middlewares/requireLimitedAccess.middleware");
 const Company = require("../models/Company");
 
-// Public Routes
+// --- Public Routes --- //
+
+/**
+ * @route GET /company
+ * @desc Récupère toutes les entreprises
+ * @access Public
+ */
 router.get("/", async (req, res) => {
     try {
         const companies = await Company.find();
@@ -18,6 +24,12 @@ router.get("/", async (req, res) => {
     }
 });
 
+/**
+ * @route GET /company/:id
+ * @desc Récupère une entreprise par son ID
+ * @param {string} req.params.id - L'ID de l'entreprise
+ * @access Public
+ */
 router.get("/:id", async (req, res) => {
     try {
         const company = await Company.findById(req.params.id);
@@ -32,7 +44,13 @@ router.get("/:id", async (req, res) => {
     }
 });
 
-// Limited Routes
+/**
+ * @route GET /company/access/:key
+ * @desc Donne un token d'accès limité via un lien d'invitation
+ * @param {string} req.params.key - Clé d'invitation
+ * @returns {Object} token JWT
+ * @access Public
+ */
 router.get("/access/:key", async (req, res) => {
     const company = await Company.findOne({ "invite.key": req.params.key });
 
@@ -60,7 +78,15 @@ router.get("/access/:key", async (req, res) => {
     res.json({ token });
 });
 
-// Admin Routes
+// --- Admin Routes --- //
+
+/**
+ * @route POST /company/:id/give-access
+ * @desc Génère un lien d'accès limité pour une entreprise
+ * @param {string} req.params.id - L'ID de l'entreprise
+ * @returns {Object} link URL pour accéder
+ * @access Admin
+ */
 router.post("/:id/give-access", authenticateToken, async (req, res) => {
     if (req.user.role !== "admin")
         return res.status(403).json({ message: "Non autorisé" });
@@ -85,6 +111,15 @@ router.post("/:id/give-access", authenticateToken, async (req, res) => {
     res.json({ link });
 });
 
+
+/**
+ * @route POST /company
+ * @desc Crée une nouvelle entreprise
+ * @param {string} req.body.name - Nom de l'entreprise
+ * @param {string} req.body.description - Description de l'entreprise
+ * @returns {Object} L'entreprise créée
+ * @access Admin
+ */
 router.post("/", authenticateToken, requireAdmin, async (req, res) => {
     try {
         const { name, description } = req.body;
@@ -98,6 +133,15 @@ router.post("/", authenticateToken, requireAdmin, async (req, res) => {
     }
 });
 
+/**
+ * @route PUT /company/:id
+ * @desc Met à jour une entreprise (accès limité ou admin)
+ * @param {string} req.params.id - L'ID de l'entreprise
+ * @param {string} req.body.name - Nouveau nom
+ * @param {string} req.body.description - Nouvelle description
+ * @returns {Object} L'entreprise mise à jour
+ * @access Limited / Admin
+ */
 router.put(
     "/:id",
     authenticateToken,
@@ -125,6 +169,13 @@ router.put(
     },
 );
 
+/**
+ * @route DELETE /company/:id
+ * @desc Supprime une entreprise
+ * @param {string} req.params.id - L'ID de l'entreprise
+ * @returns {Object} Message de confirmation
+ * @access Admin
+ */
 router.delete("/:id", authenticateToken, requireAdmin, async (req, res) => {
     try {
         const deleted = await Company.findByIdAndDelete(req.params.id);
